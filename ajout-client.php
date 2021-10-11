@@ -1,32 +1,49 @@
 
 <?php
-if( isset($_POST['envoi'])) {
+if( isset($_POST['envoi']) ) {
+  
   $erreur = false;
   foreach ($_POST as $value) {
     if (empty($value))
     $erreur = true;
   }
 
-  if( isset($_POST['nom']) && !preg_match('/^[a-zA-ZÀ-ÿ\s]{2,}$/',$_POST['nom']) )
- {
-   $Vnom = false;
- }
+    if( isset($_POST['nom']) && !preg_match('/^[a-zA-ZÀ-ÿ\s]{2,}$/',$_POST['nom']) )
+    {
+    $Vnom = false;
+    }
    else {
      $Vnom = true;
    }
 
-   if ( isset($_POST['monmotdepasse']) && preg_match("/^(?=.*[A-Z])(?=.*\d)([0-9a-zA-Z]+)$/", $_POST['monmotdepasse'] ) ) {
+   if ( isset($_POST['monmotdepasse']) && preg_match("/^(?=.*[A-Z])(?=.*\d)([0-9a-zA-Z]+)$/", $_POST['monmotdepasse'] ) ) 
+   {
      $mdp = true;
    }
    else $mdp = false;
 
 
-  if (!$erreur and ($Vnom == true) and ($mdp == true))
+  if (!$erreur and ($Vnom == true) and ($mdp == true) and filter_var($_POST['monmail'], FILTER_VALIDATE_EMAIL) )
 
      {
 
-         require "connect-bdd.php";
+           require "connect-bdd.php";
 
+           $requete_v = "SELECT CUS_id FROM customer_list WHERE CUS_email = ? ";
+
+           $sth = $conn->prepare($requete_v);
+
+           $sth->execute( [ trim($_POST['monmail']) ] );
+
+           $reponse = $sth->fetch();
+
+          if($reponse)
+           {
+            $msg = 'L\'email renseigné est deja utilisé par un autre utilisateur';
+            $mail_class = "bg bg-danger text-white";
+           }
+
+          else {
 
           // echo '<div class="container"><div class="row"><div class="col-sm"><p class="alert alert-success">Nous avons bien pris en compte vos coordonnées</p></div>';
 
@@ -58,8 +75,8 @@ if( isset($_POST['envoi'])) {
                       $form_fadeOut =  "<script> form_hidden(); </script>";
 
                       $conn = NULL;
-
    }
+  }
 }
 
 
